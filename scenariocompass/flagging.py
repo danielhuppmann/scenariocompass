@@ -17,6 +17,18 @@ META_CCS_CONCERN_NAME = (
 class ConcernValidator(Processor):
     validators: list[DataValidator] = []
 
+    @model_validator(mode="before")
+    @classmethod
+    def parse_validators(cls, values):
+        if not values.get("validators", False):
+            values["validators"] = [
+                DataValidator.from_file(file)
+                for file in criteria_dir.glob(
+                    values.get("pattern", cls.model_fields["pattern"].default)
+                )
+            ]
+        return values
+
     @property
     def criteria_names(self) -> list[str]:
         """Get the names of flagging criteria"""
