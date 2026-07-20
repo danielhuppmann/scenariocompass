@@ -7,8 +7,7 @@ from pyam.exceptions import format_log_message
 from pyam.utils import make_index
 from pydantic import model_validator
 
-from .utils import parse_validators
-
+from scenariocompass.flagging import ConcernValidator
 
 logger = logging.getLogger(__name__)
 
