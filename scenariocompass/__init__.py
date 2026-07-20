@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 
 import yaml
-
 from nomenclature.processor import Processor
 from pyam import IamDataFrame
 

@@ -1,13 +1,14 @@
 import logging
+from pathlib import Path
 
+from nomenclature.processor import DataValidator, Processor
 from pyam import IamDataFrame
-from nomenclature.processor import Processor, DataValidator
 from pydantic import model_validator
-
-from scenariocompass.utils import parse_validators
 
 logger = logging.getLogger(__name__)
 
+here = Path(__file__).absolute().parent
+criteria_dir = here.parent / "criteria" / "validate_data"
 
 META_CCS_CONCERN_NAME = (
     "Sustainability Concern|Exceeding Prudent Limit For Geological Carbon Storage|World"
@@ -15,6 +16,7 @@ META_CCS_CONCERN_NAME = (
 
 
 class ConcernValidator(Processor):
+    pattern: str
     validators: list[DataValidator] = []
 
     @model_validator(mode="before")
@@ -32,11 +34,13 @@ class ConcernValidator(Processor):
     @property
     def criteria_names(self) -> list[str]:
         """Get the names of flagging criteria"""
-        names = list()
-        for validator in self.validators:
-            for item in validator.criteria_items:
-                names.append(item.name)
-        return names
+
+        return [
+            item.name
+            for validator in self.validators
+            for item in validator.criteria_items
+            if item.name is not None
+        ]
 
     def apply(self, df: IamDataFrame) -> IamDataFrame:
         for validator in self.validators:
@@ -57,11 +61,6 @@ class FeasibilityValidator(ConcernValidator):
     pattern: str = "feasible_*.yaml"
     reassign_capacity_flags: bool = False
 
-    @model_validator(mode="before")
-    @classmethod
-    def parse_validators(cls, values):
-        return parse_validators(values, default_pattern="feasible_*.yaml")
-
     def apply(self, df: IamDataFrame) -> IamDataFrame:
 
         # Apply standard validators
@@ -81,11 +80,6 @@ class FeasibilityValidator(ConcernValidator):
 
 class SustainabilityValidator(ConcernValidator):
     pattern: str = "sustainable_*.yaml"
-
-    @model_validator(mode="before")
-    @classmethod
-    def parse_validators(cls, values):
-        return parse_validators(values, default_pattern="sustainable_*.yaml")
 
     @property
     def criteria_names(self) -> list[str]:
