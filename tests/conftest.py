@@ -20,3 +20,8 @@ def emissions_df():
 @pytest.fixture(scope="function")
 def climate_df():
     yield IamDataFrame(TEST_DATA_DIR / "climate-categorization-test-data.csv")
+
+
+@pytest.fixture(scope="function")
+def historical_vetting_df():
+    yield IamDataFrame(TEST_DATA_DIR / "historical-vetting-data.csv")

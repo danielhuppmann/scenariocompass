@@ -1,0 +1,7 @@
+Model,Scenario,Region,Variable,Unit,2010,2015,2020,2025
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Emissions|CO2|Energy and Industrial Processes,Mt CO2/yr,31665.22,33988.66,34942.82,35944.3
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Final Energy,EJ/yr,353.59,376.94,365.27,362.07
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Primary Energy|Coal,EJ/yr,151.56,160.79,170.23,160.41
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Primary Energy|Gas,EJ/yr,109.86,121.95,126.86,111.7
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Primary Energy|Nuclear,EJ/yr,9.43,9.23,9.41,7.48
+WITCH 5.0,NAVIGATE Demand-2.0°C-all_u,World,Primary Energy|Oil,EJ/yr,171.69,183.46,187.61,231.28
