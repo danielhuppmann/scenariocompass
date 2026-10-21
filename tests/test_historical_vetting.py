@@ -30,3 +30,22 @@ def test_historical_vetting_insufficient_reporting(historical_vetting_df):
     # criteria columns where expected variable do not exist are marked as `n/a`
     na_cols = [col for col in historical_vetting.criteria_names if variable in col]
     assert (obs.meta[na_cols].isna()).all(axis=1).iloc[0]
+
+
+def test_historical_vetting_failed(historical_vetting_df):
+    """Assert that vetting-variable-value outside the range yields 'failed' """
+
+    historical_vetting = HistoricalVetting()
+    obs = historical_vetting_df.copy()
+    # manually change a specific value
+    obs._data.iloc[1] = obs._data.iloc[1] * 0.75
+    obs = historical_vetting.apply(obs)
+
+    assert obs.meta[historical_vetting.vetting_indicator].iloc[0] == "failed"
+
+    failed_col = "Historical Vetting|Emissions|CO2|Energy and Industrial Processes|2015"
+    assert (obs.meta[failed_col] == "failed").iloc[0]
+
+    ok_cols = [col for col in historical_vetting.criteria_names if col != failed_col]
+    assert (obs.meta[ok_cols] == "ok").all(axis=1).iloc[0]
+
