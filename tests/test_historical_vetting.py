@@ -65,3 +65,29 @@ def test_historical_vetting_failed(historical_vetting_df):
     ok_cols = [col for col in historical_vetting.criteria_names if col != failed_col]
     check_meta_col_values(df, ok_cols, "ok")
 
+
+def test_historical_vetting_failed_and_insufficient(historical_vetting_df):
+    """Check that 'failed' takes precedence over 'insufficient_reporting'"""
+
+    na_variable = "Primary Energy|Nuclear"
+    df = historical_vetting_df.filter(variable=na_variable, keep=False)
+    # manually change a specific value
+    df._data.iloc[1] = df._data.iloc[1] * 0.75
+
+    historical_vetting = HistoricalVetting()
+    df = historical_vetting.apply(df)
+
+    check_meta_col_values(df, VETING_INDICATOR, "failed")
+
+    failed_col = "Historical Vetting|Emissions|CO2|Energy and Industrial Processes|2015"
+    check_meta_col_values(df, failed_col, "failed")
+
+    na_cols = [col for col in historical_vetting.criteria_names if na_variable in col]
+    check_meta_col_values(df, na_cols, np.nan)
+
+    ok_cols = [
+        col
+        for col in historical_vetting.criteria_names
+        if col != failed_col and col not in na_cols
+    ]
+    check_meta_col_values(df, ok_cols, "ok")
