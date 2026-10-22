@@ -1,51 +1,55 @@
 from scenariocompass import HistoricalVetting
 
 
+VETING_INDICATOR = "Historical Vetting [SCI 2025]"
+
+
 def test_historical_vetting_pass(historical_vetting_df):
-    """Assert a historical vetting is passing as expected"""
+    """Check that historical vetting is passing as expected"""
 
     historical_vetting = HistoricalVetting()
-    obs = historical_vetting.apply(historical_vetting_df)
+    df = historical_vetting.apply(historical_vetting_df)
 
-    assert (obs.meta[historical_vetting.vetting_indicator] == "passed").iloc[0]
-    assert (obs.meta[historical_vetting.criteria_names] == "ok").all(axis=1).iloc[0]
+    assert df.meta[VETING_INDICATOR].iloc[0] == "passed"
+    assert (df.meta[historical_vetting.criteria_names] == "ok").all(axis=1).iloc[0]
 
 
 def test_historical_vetting_insufficient_reporting(historical_vetting_df):
-    """Assert that missing a vetting-variable yields 'insufficient_reporting' and n/a"""
+    """Check that missing a vetting-variable yields 'insufficient_reporting' and n/a"""
+
+    na_variable = "Primary Energy|Nuclear"
+    df = historical_vetting_df.filter(variable=na_variable, keep=False)
 
     historical_vetting = HistoricalVetting()
-    variable = "Primary Energy|Nuclear"
-    obs = historical_vetting.apply(historical_vetting_df.filter(
-        variable=variable, keep=False,
-    ))
+    df = historical_vetting.apply(df)
 
-    assert all(
-        obs.meta[historical_vetting.vetting_indicator] == "insufficient reporting"
-    )
+    assert df.meta[VETING_INDICATOR].iloc[0] == "insufficient reporting"
 
-    ok_cols = [col for col in historical_vetting.criteria_names if variable not in col]
-    assert (obs.meta[ok_cols] == "ok").all(axis=1).iloc[0]
+    ok_cols = [
+        col for col in historical_vetting.criteria_names if na_variable not in col
+    ]
+    assert (df.meta[ok_cols] == "ok").all(axis=1).iloc[0]
 
-    # criteria columns where expected variable do not exist are marked as `n/a`
-    na_cols = [col for col in historical_vetting.criteria_names if variable in col]
-    assert (obs.meta[na_cols].isna()).all(axis=1).iloc[0]
+    # criteria columns where expected variable does not exist are marked as `n/a`
+    na_cols = [col for col in historical_vetting.criteria_names if na_variable in col]
+    assert (df.meta[na_cols].isna()).all(axis=1).iloc[0]
 
 
 def test_historical_vetting_failed(historical_vetting_df):
-    """Assert that vetting-variable-value outside the range yields 'failed' """
+    """Check that vetting-variable-value outside the range yields 'failed'"""
+
+    df = historical_vetting_df.copy()
+    # manually change a specific value
+    df._data.iloc[1] = df._data.iloc[1] * 0.75
 
     historical_vetting = HistoricalVetting()
-    obs = historical_vetting_df.copy()
-    # manually change a specific value
-    obs._data.iloc[1] = obs._data.iloc[1] * 0.75
-    obs = historical_vetting.apply(obs)
+    df = historical_vetting.apply(df)
 
-    assert obs.meta[historical_vetting.vetting_indicator].iloc[0] == "failed"
+    assert df.meta[VETING_INDICATOR].iloc[0] == "failed"
 
     failed_col = "Historical Vetting|Emissions|CO2|Energy and Industrial Processes|2015"
-    assert (obs.meta[failed_col] == "failed").iloc[0]
+    assert (df.meta[failed_col] == "failed").iloc[0]
 
     ok_cols = [col for col in historical_vetting.criteria_names if col != failed_col]
-    assert (obs.meta[ok_cols] == "ok").all(axis=1).iloc[0]
+    assert (df.meta[ok_cols] == "ok").all(axis=1).iloc[0]
 
