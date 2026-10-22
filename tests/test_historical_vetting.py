@@ -7,7 +7,7 @@ from scenariocompass import HistoricalVetting
 VETING_INDICATOR = "Historical Vetting [SCI 2025]"
 
 
-def check_meta_col_values(df, cols, value):
+def assert_meta_values(df, cols, value):
     if value is np.nan:
         assert (df.meta[cols].isna()).all(axis=1).iloc[0]
     elif is_list_like(cols):
@@ -22,8 +22,8 @@ def test_historical_vetting_pass(historical_vetting_df):
     historical_vetting = HistoricalVetting()
     df = historical_vetting.apply(historical_vetting_df)
 
-    check_meta_col_values(df, VETING_INDICATOR, "passed")
-    check_meta_col_values(df, historical_vetting.criteria_names, "ok")
+    assert_meta_values(df, VETING_INDICATOR, "passed")
+    assert_meta_values(df, historical_vetting.criteria_names, "ok")
 
 
 def test_historical_vetting_insufficient_reporting(historical_vetting_df):
@@ -35,16 +35,16 @@ def test_historical_vetting_insufficient_reporting(historical_vetting_df):
     historical_vetting = HistoricalVetting()
     df = historical_vetting.apply(df)
 
-    check_meta_col_values(df, VETING_INDICATOR, "insufficient reporting")
+    assert_meta_values(df, VETING_INDICATOR, "insufficient reporting")
 
     ok_cols = [
         col for col in historical_vetting.criteria_names if na_variable not in col
     ]
-    check_meta_col_values(df, ok_cols, "ok")
+    assert_meta_values(df, ok_cols, "ok")
 
     # criteria columns where expected variable does not exist are marked as `n/a`
     na_cols = [col for col in historical_vetting.criteria_names if na_variable in col]
-    check_meta_col_values(df, na_cols, np.nan)
+    assert_meta_values(df, na_cols, np.nan)
 
 
 def test_historical_vetting_failed(historical_vetting_df):
@@ -57,13 +57,13 @@ def test_historical_vetting_failed(historical_vetting_df):
     historical_vetting = HistoricalVetting()
     df = historical_vetting.apply(df)
 
-    check_meta_col_values(df, VETING_INDICATOR, "failed")
+    assert_meta_values(df, VETING_INDICATOR, "failed")
 
     failed_col = "Historical Vetting|Emissions|CO2|Energy and Industrial Processes|2015"
-    check_meta_col_values(df, failed_col, "failed")
+    assert_meta_values(df, failed_col, "failed")
 
     ok_cols = [col for col in historical_vetting.criteria_names if col != failed_col]
-    check_meta_col_values(df, ok_cols, "ok")
+    assert_meta_values(df, ok_cols, "ok")
 
 
 def test_historical_vetting_failed_and_insufficient(historical_vetting_df):
@@ -77,17 +77,17 @@ def test_historical_vetting_failed_and_insufficient(historical_vetting_df):
     historical_vetting = HistoricalVetting()
     df = historical_vetting.apply(df)
 
-    check_meta_col_values(df, VETING_INDICATOR, "failed")
+    assert_meta_values(df, VETING_INDICATOR, "failed")
 
     failed_col = "Historical Vetting|Emissions|CO2|Energy and Industrial Processes|2015"
-    check_meta_col_values(df, failed_col, "failed")
+    assert_meta_values(df, failed_col, "failed")
 
     na_cols = [col for col in historical_vetting.criteria_names if na_variable in col]
-    check_meta_col_values(df, na_cols, np.nan)
+    assert_meta_values(df, na_cols, np.nan)
 
     ok_cols = [
         col
         for col in historical_vetting.criteria_names
         if col != failed_col and col not in na_cols
     ]
-    check_meta_col_values(df, ok_cols, "ok")
+    assert_meta_values(df, ok_cols, "ok")
