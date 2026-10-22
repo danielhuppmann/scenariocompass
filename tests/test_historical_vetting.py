@@ -3,12 +3,11 @@ from pandas.api.types import is_list_like
 
 from scenariocompass import HistoricalVetting
 
-
 VETING_INDICATOR = "Historical Vetting [SCI 2025]"
 
 
 def assert_meta_values(df, cols, value):
-    if value is np.nan:
+    if not isinstance(value, str) and np.isnan(value):
         assert (df.meta[cols].isna()).all(axis=1).iloc[0]
     elif is_list_like(cols):
         assert (df.meta[cols] == value).all(axis=1).iloc[0]
